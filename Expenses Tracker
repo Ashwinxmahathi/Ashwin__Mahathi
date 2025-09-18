@@ -1,0 +1,71 @@
+import csv
+import datetime
+
+FILENAME = "expenses.csv"
+
+def load_expenses():
+    expenses = []
+    try:
+        with open(FILENAME, mode='r', newline='') as file:
+            reader = csv.DictReader(file)
+            for row in reader:
+                expenses.append(row)
+    except FileNotFoundError:
+        pass
+    return expenses
+
+def save_expenses(expenses):
+    with open(FILENAME, mode='w', newline='') as file:
+        fieldnames = ['date', 'category', 'description', 'amount']
+        writer = csv.DictWriter(file, fieldnames=fieldnames)
+        writer.writeheader()
+        for expense in expenses:
+            writer.writerow(expense)
+
+def add_expense(expenses):
+    date = input("Enter date (YYYY-MM-DD) or press Enter for today: ")
+    if not date:
+        date = datetime.date.today().isoformat()
+    category = input("Enter category (e.g., Food, Transport): ")
+    description = input("Enter description: ")
+    amount = input("Enter amount: ")
+    expense = {
+        'date': date,
+        'category': category,
+        'description': description,
+        'amount': amount
+    }
+    expenses.append(expense)
+    print("Expense added!")
+
+def view_expenses(expenses):
+    if not expenses:
+        print("No expenses found.")
+        return
+    print(f"{'Date':<12} {'Category':<15} {'Description':<25} {'Amount':<10}")
+    print("-" * 65)
+    for exp in expenses:
+        print(f"{exp['date']:<12} {exp['category']:<15} {exp['description']:<25} {exp['amount']:<10}")
+
+def main():
+    expenses = load_expenses()
+    while True:
+        print("\nExpense Tracker")
+        print("1. Add Expense")
+        print("2. View Expenses")
+        print("3. Exit")
+        choice = input("Enter your choice: ")
+        if choice == '1':
+            add_expense(expenses)
+            save_expenses(expenses)
+        elif choice == '2':
+            view_expenses(expenses)
+        elif choice == '3':
+            save_expenses(expenses)
+            print("Goodbye!")
+            break
+        else:
+            print("Invalid choice. Please select 1, 2, or 3.")
+
+if __name__ == "__main__":
+    main()
