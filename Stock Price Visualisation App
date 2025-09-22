@@ -1,0 +1,29 @@
+import streamlit as st
+import yfinance as yf
+import pandas as pd
+import plotly.graph_objs as go
+
+st.title("Stock Price Visualization App")
+
+# User input for ticker and period
+ticker = st.text_input("Enter stock ticker (e.g. AAPL)", value="AAPL")
+period = st.selectbox("Select period", ['1mo', '3mo', '6mo', '1y', '2y', '5y', '10y', 'max'])
+interval = st.selectbox("Select interval", ['1d', '1wk', '1mo'])
+
+# Download data
+stock_data = yf.download(tickers=ticker, period=period, interval=interval)
+
+if not stock_data.empty:
+    # Calculate moving averages
+    stock_data['SMA20'] = stock_data['Close'].rolling(window=20).mean()
+    stock_data['EMA20'] = stock_data['Close'].ewm(span=20, adjust=False).mean()
+
+    # Plot
+    fig = go.Figure()
+    fig.add_trace(go.Scatter(x=stock_data.index, y=stock_data['Close'], name='Close', line=dict(color='blue')))
+    fig.add_trace(go.Scatter(x=stock_data.index, y=stock_data['SMA20'], name='SMA 20', line=dict(color='green')))
+    fig.add_trace(go.Scatter(x=stock_data.index, y=stock_data['EMA20'], name='EMA 20', line=dict(color='red')))
+    fig.update_layout(title=f"{ticker} Stock Price", xaxis_title="Date", yaxis_title="Price")
+    st.plotly_chart(fig)
+else:
+    st.warning("No data found. Try a different ticker or period.")
