@@ -1,0 +1,50 @@
+import requests
+from bs4 import BeautifulSoup
+
+# List of (URL, HTML tag, class name) for headlines to scrape
+SOURCES = [
+    {
+        'name': 'BBC News',
+        'url': 'https://www.bbc.com/news',
+        'article_tag': 'h3',
+        'article_class': 'gs-c-promo-heading__title'
+    },
+    {
+        'name': 'Times of India',
+        'url': 'https://timesofindia.indiatimes.com/',
+        'article_tag': 'span',
+        'article_class': 'w_tle'
+    }
+]
+
+def fetch_headlines(source):
+    try:
+        response = requests.get(source['url'], timeout=10)
+        response.raise_for_status()
+        soup = BeautifulSoup(response.text, 'html.parser')
+        headlines = soup.find_all(source['article_tag'], class_=source['article_class'])
+        news_list = [headline.get_text(strip=True) for headline in headlines[:5]]
+        return news_list
+    except Exception as e:
+        print(f"Error scraping {source['name']}: {e}")
+        return []
+
+def aggregate_news():
+    all_news = []
+    for source in SOURCES:
+        headlines = fetch_headlines(source)
+        all_news.append((source['name'], headlines))
+    return all_news
+
+def save_to_file(news):
+    with open('aggregated_news.txt', 'w', encoding='utf-8') as f:
+        for source, headlines in news:
+            f.write(f'--- {source} ---\n')
+            for headline in headlines:
+                f.write(f'- {headline}\n')
+            f.write('\n')
+
+if __name__ == "__main__":
+    news = aggregate_news()
+    save_to_file(news)
+    print("News aggregation complete! Check 'aggregated_news.txt' file.")
