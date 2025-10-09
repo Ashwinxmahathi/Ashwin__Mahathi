@@ -1,0 +1,29 @@
+import os
+import shutil
+
+def organize_files(folder_path):
+    # List all files in the provided directory
+    for filename in os.listdir(folder_path):
+        # Full path to the file
+        source = os.path.join(folder_path, filename)
+        # Only process if it's a file
+        if os.path.isfile(source):
+            # Get file extension (without dot)
+            ext = filename.split('.')[-1].lower()
+            if ext == filename:  # No extension
+                ext_folder = 'no_extension'
+            else:
+                ext_folder = ext
+            # Create extension folder if it does not exist
+            dest_folder = os.path.join(folder_path, ext_folder)
+            if not os.path.exists(dest_folder):
+                os.makedirs(dest_folder)
+            # Move the file to the created folder
+            dest = os.path.join(dest_folder, filename)
+            shutil.move(source, dest)
+            print(f"Moved: {filename} -> {ext_folder}/")
+
+# Example usage
+input_folder = input("Enter the path of the folder to organize: ")
+organize_files(input_folder)
+print("Organization complete!")
